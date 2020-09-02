@@ -14,6 +14,8 @@ export default function Match_screen({navigation}) {
   const [date, setDate] = useState([]);
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  let user = firebase.auth().currentUser.uid;
 
   //Date picker
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -39,7 +41,7 @@ export default function Match_screen({navigation}) {
 
   EnterNewMatch = () => {
     if (match && date) {
-      firebase.firestore().collection('matches').add({name: match, date: date})
+      firebase.firestore().collection('matches').add({name: match, date: date, user_id: user})
       .then(() => {
         alert('Match added!')
         const resetState = '';
@@ -55,10 +57,12 @@ export default function Match_screen({navigation}) {
     const match_list = firebase.firestore().collection('matches').onSnapshot(querySnapshot => {
       const matches_list = [];
       querySnapshot.forEach(documentSnapshot => {
-        matches_list.push({
-          ...documentSnapshot.data(),
-          key: documentSnapshot.id
-        });
+        if (user === documentSnapshot.data().user_id){
+          matches_list.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id
+          });
+        }
       });
       setMatches(matches_list);
       setLoading(false);

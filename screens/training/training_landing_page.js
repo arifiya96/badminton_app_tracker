@@ -15,6 +15,8 @@ export default function Training_screen({navigation}) {
   const [training_sessions, set_training_sessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  let user = firebase.auth().currentUser.uid;
+
   //Date picker
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -39,7 +41,7 @@ export default function Training_screen({navigation}) {
 
   EnterNewTrainingSession = () => {
     if (date) {
-      firebase.firestore().collection('training').add({name: 'Training Session', date: date})
+      firebase.firestore().collection('training').add({name: 'Training Session', date: date, user_id: user})
       .then(() => {
         alert('Training session added!')
         const resetState = '';
@@ -55,10 +57,12 @@ export default function Training_screen({navigation}) {
     const training_list = firebase.firestore().collection('training').onSnapshot(querySnapshot => {
       const trainings = [];
       querySnapshot.forEach(documentSnapshot => {
-        trainings.push({
-          ...documentSnapshot.data(),
-          key: documentSnapshot.id
-        });
+        if (user === documentSnapshot.data().user_id){
+          trainings.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id
+          });
+        }
       });
       set_training_sessions(trainings);
       setLoading(false);

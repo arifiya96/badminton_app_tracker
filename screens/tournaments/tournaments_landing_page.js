@@ -15,6 +15,8 @@ export default function Tournament_screen({navigation}) {
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  let user = firebase.auth().currentUser.uid;
+
   //Date picker
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -39,7 +41,7 @@ export default function Tournament_screen({navigation}) {
 
   EnterNewTournament = () => {
     if (tournament && date) {
-      firebase.firestore().collection('tournaments').add({name: tournament, date: date})
+      firebase.firestore().collection('tournaments').add({name: tournament, date: date, user_id: user})
       .then(() => {
         alert('Tournament added!')
         const resetState = '';
@@ -55,10 +57,12 @@ export default function Tournament_screen({navigation}) {
     const tournament_list = firebase.firestore().collection('tournaments').onSnapshot(querySnapshot => {
       const tourneys = [];
       querySnapshot.forEach(documentSnapshot => {
-        tourneys.push({
-          ...documentSnapshot.data(),
-          key: documentSnapshot.id
-        });
+        if (user === documentSnapshot.data().user_id){
+          tourneys.push({
+            ...documentSnapshot.data(),
+            key: documentSnapshot.id
+          });
+        }
       });
       setTournaments(tourneys);
       setLoading(false);
